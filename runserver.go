@@ -3,11 +3,12 @@ package main
 import (
 	"fmt"
 	"image"
-	"image/jpeg"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
+	"image/jpeg"
+	"weatherlandscape" // Import your package that contains WeatherLandscape
 )
 
 const (
@@ -18,19 +19,7 @@ const (
 	FILETOOOLD_SEC   = 60 * 10
 )
 
-type WeatherLandscape struct{}
-
-// Methods related to WeatherLandscape
-func (wl *WeatherLandscape) TmpFilePath(filename string) string {
-	return filepath.Join(".", filename)
-}
-
-func (wl *WeatherLandscape) MakeImage() image.Image {
-	// Generate and return an image (placeholder logic)
-	return image.NewRGBA(image.Rect(0, 0, 100, 100))
-}
-
-var WEATHER = WeatherLandscape{}
+var WEATHER = weatherlandscape.NewWeatherLandscape() // Assuming a constructor
 
 func isFileTooOld(filename string) bool {
 	info, err := os.Stat(filename)
@@ -48,20 +37,20 @@ func createWeatherImages() {
 		return
 	}
 
-	img := WEATHER.MakeImage()
+	img := WEATHER.MakeImage() // Assuming MakeImage returns an image.Image
 
 	// Save image to file (JPEG as an example)
 	file, _ := os.Create(userFileName)
 	defer file.Close()
 	jpeg.Encode(file, img, nil)
 
-	// Rotate and flip the image (omitted for simplicity)
-	// Save as einkFileName
+	// Rotate and flip the image if required
+	// Save the transformed image as einkFileName
 }
 
 func indexHtml() string {
 	body := "<h1>Weather as Landscape</h1>"
-	body += "<p>Place: 0.0000, 0.0000</p>"
+	body += fmt.Sprintf("<p>Place: %.4f, %.4f</p>", WEATHER.Lat, WEATHER.Lon)
 	body += "<p><img src=\"" + USERFILENAME + "\" alt=\"Weather\"></p>"
 	body += "<p>ESP32 URL: <span id=\"eink\"></span></p>"
 	body += "<script>document.getElementById(\"eink\").innerHTML = window.location+\"" + EINKFILENAME + "\";</script>"
